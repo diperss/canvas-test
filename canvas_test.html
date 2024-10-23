@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perpendicular Lines on Canvas</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+        canvas {
+            display: block;
+            background-color: white;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        let lastX = 0;
+        let lastY = 0;
+        let isWhite = true;
+
+        const tempCanvas = document.createElement('canvas');
+        const tempCtx = tempCanvas.getContext('2d');
+        tempCanvas.width = canvas.width;
+        tempCanvas.height = canvas.height;
+
+        function drawPerpendicularLine(x, y) {
+            tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
+
+            const dx = x - lastX;
+            const dy = y - lastY;
+            const angle = Math.atan2(dy, dx);
+            const perpendicularAngle = angle + Math.PI / 2;
+
+            const length = Math.sqrt(canvas.width ** 2 + canvas.height ** 2);
+            const startX = x - length * Math.cos(perpendicularAngle);
+            const startY = y - length * Math.sin(perpendicularAngle);
+            const endX = x + length * Math.cos(perpendicularAngle);
+            const endY = y + length * Math.sin(perpendicularAngle);
+
+            tempCtx.save();
+            tempCtx.beginPath();
+            tempCtx.moveTo(startX, startY);
+            tempCtx.lineTo(endX, endY);
+            tempCtx.lineTo(endX + 5, endY);
+            tempCtx.lineTo(startX + 5, startY);
+            tempCtx.closePath();
+            tempCtx.fillStyle = isWhite ? 'white' : 'black';
+            tempCtx.fill();
+            tempCtx.restore();
+
+            ctx.save();
+            ctx.globalCompositeOperation = 'difference';
+            ctx.drawImage(tempCanvas, 0, 0);
+            ctx.restore();
+
+            isWhite = !isWhite;
+            lastX = x;
+            lastY = y;
+        }
+
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            drawPerpendicularLine(x, y);
+        });
+
+        canvas.addEventListener('mouseleave', () => {
+            lastX = 0;
+            lastY = 0;
+            isWhite = true;
+        });
+    </script>
+</body>
+</html>
